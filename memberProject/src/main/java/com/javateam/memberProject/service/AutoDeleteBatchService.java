@@ -48,7 +48,8 @@ public class AutoDeleteBatchService {
 	// 이미지 DB table(UPLOAD_FILE_TBL) 현황(실제 게ㅣ판에 등록된 이미지)에 없는
 	// 이미지들(garbage images)을 일괄(batch) 선별 삭제 : batch processing
 
-	@Scheduled(cron="10 10 15 4 9 *") // 9월 4일 오후 15:10:10에 적용
+	@Scheduled(cron="0 0 4 * * *") // 매일 오전(심야:유휴시간) 04:00:00에 적용
+	// @Scheduled(cron="10 10 15 4 9 *") // 9월 4일 오후 15:10:10에 적용
 	// @Scheduled(cron="0 0/5 * * * ?") // 5분 단위 반복 실행
 	public void deleteGarbageImagesAuto() {
 

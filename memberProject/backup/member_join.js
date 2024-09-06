@@ -261,10 +261,6 @@ window.onload = () => {
 
     // 패쓰워드 점검 플래그 
     let pwCheckFlag = false;
-    
-    // 패스워드 & 패스워드 확인 점검 플래그
-    let pw1CheckFlag = false;
-    let pw2CheckFlag = false;
 
     // 이름 점검 플래그
     let nameCheckFlag = false;
@@ -305,10 +301,6 @@ window.onload = () => {
 
     // 패쓰워드 필드 인식
     let pwFld = document.getElementById("pw");
-    
-    // 패스워드 & 패스워드 확인
-    let pw1Fld = document.getElementById("pw1");
-    let pw2Fld = document.getElementById("pw2");
 
     // 패쓰워드 에러 패널 인식
     let pwFldErrPnl = document.getElementById("pw_fld_err_pnl");
@@ -437,7 +429,6 @@ window.onload = () => {
     //////////////////////////////////////           
 
     // 패쓰워드 필드 입력 후 이벤트 처리 : keyup
-    /*
     pwFld.onkeyup = (e) => {
 
         console.log("패쓰워드 필드 keyup")
@@ -446,45 +437,7 @@ window.onload = () => {
                         pwFld.value,
                         pwFldErrPnl,
 						pwErrMsg);
-    } //
-    */
-   
-	pw1Fld.onkeyup = (e) => {
-	
-	    console.log("패쓰워드1 필드 keyup")
-	    pw1CheckFlag = isCheckFldValid(pw1Fld,                                 
-	                    /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,20}/,
-	                    pw1Fld.value,
-	                    pwFldErrPnl,
-						pwErrMsg);
-    } //
-    
-    pw2Fld.onkeyup = (e) => {
-	
-	    console.log("패쓰워드2 필드 keyup")
-	    pw2CheckFlag = isCheckFldValid(pw2Fld,                                 
-	                    /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,20}/,
-	                    pw2Fld.value,
-	                    pwFldErrPnl,
-						pwErrMsg);
-    } //
-    
-    // pw1, pw2 동등비교
-    pw2Fld.onblur = (e) => {
-	
-	    console.log("패쓰워드2 필드 blur");
-	    
-	    if (pw1CheckFlag == true && pw2CheckFlag == true) {
-			console.log("패스워드 동등여부 : ", pw1Fld.value == pw2Fld.value);
-			pwCheckFlag = pw1Fld.value == pw2Fld.value ? true : false;
-		} else {
-			console.log("패스워드 불일치합니다");
-			pwCheckFlag = false;
-		}
-		
-		console.log("pwCheckFlag : ", pwCheckFlag);
-	    
-    } //
+    } //     
 
     // 이름 필드 입력 후 이벤트 처리 : blur
     nameFld.onblur = (e) => {
@@ -763,8 +716,6 @@ window.onload = () => {
         console.log("\n######## 회원가입폼 전체점검 ###############################\n");
 
         console.log(`아이디 점검 플래그(idCheckFlag) : ${idCheckFlag}`);
-        console.log(`패쓰워드1 점검 플래그(pw1CheckFlag) : ${pw1CheckFlag}`);
-        console.log(`패쓰워드2 점검 플래그(pw2CheckFlag) : ${pw2CheckFlag}`);
         console.log(`패쓰워드 점검 플래그(pwCheckFlag) : ${pwCheckFlag}`);
         console.log(`이름 점검 플래그(nameCheckFlag) : ${nameCheckFlag}`);
 
@@ -841,32 +792,14 @@ window.onload = () => {
             } //
 
             // 패쓰워드 필드 재점검
-            if (pw1CheckFlag == false) {
+            if (idCheckFlag == false) {
 
-                pw1CheckFlag = isCheckFldValid(pw1Fld,                                 
+                pwCheckFlag = isCheckFldValid(pwFld,                                 
                             /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,20}/,
                             "",
                             pwFldErrPnl,
                             pwErrMsg);
-            } //
-            
-            if (pw2CheckFlag == false) {
-
-                pw2CheckFlag = isCheckFldValid(pw2Fld,                                 
-                            /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,20}/,
-                            "",
-                            pwFldErrPnl,
-                            pwErrMsg);
-            } //  
-            
-            if (pw1CheckFlag == true && pw2CheckFlag == true) {
-				console.log("패스워드 동등여부 : ", pw1Fld.value == pw2Fld.value);
-				pwCheckFlag = pw1Fld.value == pw2Fld.value ? true : false;
-			} else {
-				console.log("패스워드 불일치합니다");
-				pwCheckFlag = false;
-			}
-			
+            } //    
 
             // 이름 필드 재점검
             if (nameCheckFlag == false) {
