@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>업로드 성공</title>
+</head>
+<body>
+
+    <h3>Spring Original/Thumbnail Image File Upload</h3>
+    <p>파일 전송 성공.</p>
+    
+    <div th:each="file, st : ${files}">
+    	원래의 파일 명 : <span th:text="${file}"></span><br>
+    	<img th:src="@{'/image/' + ${encodedFiles.get(st.index)}}" /><br><br>
+    	
+    	<hr>
+    	
+    	썸네일 파일명 : <span th:text="${encodedthumbFiles.get(st.index)}"></span><br>
+    	<img th:src="@{'/image/thumbnail/' + ${thumbFiles.get(st.index)}}" /><br><br>
+    </div>
+    
+</body>
+</html>
