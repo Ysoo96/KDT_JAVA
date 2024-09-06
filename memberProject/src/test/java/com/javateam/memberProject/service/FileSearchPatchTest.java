@@ -9,13 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,52 +25,42 @@ import com.javateam.memberProject.domain.BoardVO;
 import com.javateam.memberProject.domain.UploadFile;
 import com.javateam.memberProject.repository.BoardDAO;
 import com.javateam.memberProject.repository.FileDAO;
-import com.javateam.memberProject.repository.FileDeleteMyBatisDAO;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Service
-@EnableScheduling
-// 참고) Enable Scheduling Annotations
-// cron 일괄(batch) 처리 적용 위해서 반드시 표기
-// : https://docs.spring.io/spring-framework/reference/integration/scheduling.html#scheduling-enable-annotation-support
+// @SpringBootTest
+@DataJpaTest
+//@ExtendWith(SpringExtension.class)
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Slf4j
-public class AutoDeleteBatchService {
+public class FileSearchPatchTest {
 
 	@Autowired
-	FileDeleteMyBatisDAO fileDeleteMyBatisDAO;
+	FileDAO fileDAO;
+
+	@Value("${imageUpload.path}")
+	String imgPath;
+
+	ImageService imgSvc;
 
 	@Autowired
-	BoardService boardService;;
+	BoardDAO boardDAO;
 
-	@Autowired
-	ImageService imageService;
-
-	@Autowired
-	FileService fileService;
-
-	@Value("${imageUpload.path}") // 이미지 저장 경로
+	@Value("${imageUpload.path}")
 	String uploadPath;
 
-	// cron 표현식 :
-	// www.classum.com/main/space/126296/community/462
-	// https://ko.wikipedia.org/wiki/Cron
-
-	// @Scheduled annotation
-	// : https://docs.spring.io/spring-framework/reference/integration/scheduling.html#scheduling-annotation-support-scheduled
-
-	// 매일 5분 단위로 불필요한 이미지 저장소 최적화.
-	// 실제 운영할 경우는 이용자들이 거의 없는 유휴시간대(취침시간대 가령, 새벽 시간)에 구동하도록
-	// 정기점검 및 일괄 파일삭제 시간을 지정하면 네트워크 트래픽 문제를 해소할 수 있음.
-	//
-	// 이미지 DB table(UPLOAD_FILE_TBL) 현황(실제 게시판에 등록된 이미지)에 없는
-	// 이미지들(garbage images)을 일괄(batch) 선별 삭제 : batch processing
-
-	// @Scheduled(cron="0 0 4 * * *") // 매일 오전(심야:유휴시간) 04:00:00에 적용
-	// @Scheduled(cron="50 54 16 4 9 *") // 9월 4일 오후 16:54:50에 적용
+	// 개선사항) 실제로 이미지를 summernote에서 업로드할 경우 upload_file_tbl에 반영되기 때문에
+	// submit(전송)을 하지 않았어도 가비지(garbage) 파일이 잔류하는 경우가 발생합니다.
+	// 이럴 경우는 submit한 시점에서 그때 Controller 단계에서 저장하게 할 수도 있고(howto-1),
+	// 그렇지 않고 기존의 로직을 그대로 활용할 경우는 board_tbl.board_content 필드에 들어간 그림 목록과 비교/대조하여
+	// 가비지 삭제 목록을 생성하여 일괄 삭제할 수 있습니다(howto-2).
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	// @Scheduled(cron="0 0/1 * * * ?") // 5분 단위 반복 실행
-	public void deleteGarbageImagesAuto() {
+	@Rollback(false)
+	@Test
+	public void test() {
+
+		imgSvc = new ImageService(imgPath);
 
 		// 이미지 파일 지역 저장소의 파일명 현황 확보
 		log.info("파일 지역 저장소 경로 : {}", uploadPath);
@@ -129,8 +121,7 @@ public class AutoDeleteBatchService {
 
 		// List<UploadFile> realUpdateFileList = fileDAO.findAll(); // before
 
-		// List<BoardVO> defaultBoardList = (List<BoardVO>) boardDAO.findAll(Sort.by("boardNum")); // 전체 데이터 조회
-		List<BoardVO> defaultBoardList = boardService.findAll(); // 전체 데이터 조회
+		List<BoardVO> defaultBoardList = (List<BoardVO>) boardDAO.findAll(Sort.by("boardNum")); // 전체 데이터 조회
 
 		log.info("defaultBoardList 크기 : {}", defaultBoardList.size());
 
@@ -138,7 +129,7 @@ public class AutoDeleteBatchService {
 
 		// 게시글 레코드들에서  board_content 필드가 보유하고 있는 등록 이미지 리스트를 확보
 		for (BoardVO boardVO : defaultBoardList) {
-			defaultImgList.addAll(imageService.getImageList(boardVO.getBoardContent(), "/board/image/"));
+			defaultImgList.addAll(imgSvc.getImageList(boardVO.getBoardContent(), "/board/image/"));
 		}
 
 		log.info("defaultImgList : {}", defaultImgList.size());
@@ -147,7 +138,7 @@ public class AutoDeleteBatchService {
 		defaultImgList.forEach(x -> { log.info("기존 DB UPLOAD_FILE_TBL 테이블 이미지 아이디(ID) : " + x); });
 
 		// 해당 upload_file_tbl의 이미지 아이디(PK:기본키) 이외의 레코드(정식 미등록 이미지)는 삭제
-		List<UploadFile> realUpdateFileList = fileService.findAll();
+		List<UploadFile> realUpdateFileList = fileDAO.findAll();
 
 		// UPLOAD_FILE_TBL에서 지워야될 이미지 아이디 목록 조회
 		List<Integer> deleteImageIdList = new ArrayList<>();
@@ -158,17 +149,12 @@ public class AutoDeleteBatchService {
 
 		deleteImageIdList.forEach(x -> { log.info("삭제할 DB UPLOAD_FILE_TBL 테이블 이미지 아이디(ID) : " + x); });
 
-		// fileDAO.deleteAllById(deleteImageIdList);
-		// JPA 결함으로 인해 MyBatis 메서드 활용
-		for (int id : deleteImageIdList) {
-			fileDeleteMyBatisDAO.deleteFile(id);
-			log.info("id = {} 레코드 삭제", id);
-		}
+		fileDAO.deleteAllById(deleteImageIdList);
 
 		log.info("삭제 후");
 
 		// 가비지 이미지 DB table 레코드 삭제 이후 실제 보유 현황 조회
-		realUpdateFileList = fileService.findAll();
+		realUpdateFileList = fileDAO.findAll();
 
 		realUpdateFileList.forEach(x -> { log.info("삭제 후 기존 DB UPLOAD_FILE_TBL 테이블 이미지 아이디(ID) : " + x); });
 
@@ -216,6 +202,6 @@ public class AutoDeleteBatchService {
 			log.info("삭제할 파일들이 없습니다.");
 		}
 
-	} //
+	}
 
 }
