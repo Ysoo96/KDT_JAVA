@@ -19,6 +19,7 @@
 	
 		<ul id="main_menu">
 		
+			<!-- gnb -->
 			<li><a th:href="@{/home}">Home</a></li>
 			
 			<li>
@@ -29,18 +30,17 @@
 					</form>
 				</search>
 			</li>
+
+			<li><a th:href="@{/board/list}">문의</a></li>
+			<!-- // gnb -->
 			
-			<!-- 게시판 링크 -->
-			<li sec:authorize="isAnonymous()" sec:authorize="isAuthenticated()"><a th:href="@{/board/list}">문의</a></li>
-			<li sec:authorize="isAuthenticated()"><a th:href="@{/board/list}">문의</a></li>
-			
-			<!-- 로그인 인증이 안되었을 때  -->
+			<!-- gnb(로그인전) -->
 			<li sec:authorize="isAnonymous()"><a th:href="@{/login}">로그인</a></li>
 			
 			<li sec:authorize="isAnonymous()"><a th:href="@{/join}">회원 가입</a></li>
+			<!-- // gnb(로그인전) -->
 						
-			<!-- 로그인 인증되었을 때   -->
-			
+			<!-- gnb(로그인후) -->
 			<li sec:authorize="isAuthenticated()"><a th:href="@{/myPage}"><i class="bi bi-person fs-3"></i></a></li>
 			
 			<!-- <li sec:authorize="isAuthenticated()"><a th:href="@{/logout}">로그아웃</a></li>
@@ -48,9 +48,11 @@
 			<li sec:authorize="isAuthenticated()"><a th:href="@{/member/view}">회원정보 조회</a></li>
 			
 			<li sec:authorize="isAuthenticated()"><a th:href="@{/member/update}">회원정보 수정</a></li> -->
+			<!-- // gnb(로그인후) -->
 						
-			<!-- 등급(롤:role)이 관리자일 경우 -->
+			<!-- gnb(관리자) -->
 			<li sec:authorize="hasRole('ROLE_ADMIN')"><a th:href="@{/admin/viewAllWithRoles}">회원 관리</a></li>
+			<!-- // gnb(관리자) -->
 			
 		</ul>
 
