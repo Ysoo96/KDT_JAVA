@@ -77,8 +77,6 @@ public class BoardServiceImpl implements BoardService {
 			   boardDAO.findByBoardWriterContaining(searchWord, pageable).getContent();
 	}
 
-
-
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public BoardVO updateBoard(BoardVO boardVO) {
