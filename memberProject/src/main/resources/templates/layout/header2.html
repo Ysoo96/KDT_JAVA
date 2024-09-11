@@ -2,7 +2,6 @@
 <html lang="ko" 
 	  xmlns:th="http://www.thymeleaf.org"
 	  xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
 <!-- 
 	참고)
 	
@@ -19,20 +18,7 @@
 	
 		<ul id="main_menu">
 		
-			<li><a th:href="@{/home}">Home</a></li>
-			
-			<li>
-				<search>
-					<form action="/memebr/search">
-						<input id="search" name="search" type="search">
-						<button type="submit"><i class="bi bi-search"></i></button>
-					</form>
-				</search>
-			</li>
-			
-			<!-- 게시판 링크 -->
-			<li sec:authorize="isAnonymous()" sec:authorize="isAuthenticated()"><a th:href="@{/board/list}">문의</a></li>
-			<li sec:authorize="isAuthenticated()"><a th:href="@{/board/list}">문의</a></li>
+			<li><a th:href="@{/}">Home</a></li>
 			
 			<!-- 로그인 인증이 안되었을 때  -->
 			<li sec:authorize="isAnonymous()"><a th:href="@{/login}">로그인</a></li>
@@ -40,14 +26,16 @@
 			<li sec:authorize="isAnonymous()"><a th:href="@{/join}">회원 가입</a></li>
 						
 			<!-- 로그인 인증되었을 때   -->
+			<li sec:authorize="isAuthenticated()"><a th:href="@{/myPage}">MyPage</a></li>
 			
-			<li sec:authorize="isAuthenticated()"><a th:href="@{/myPage}"><i class="bi bi-person fs-3"></i></a></li>
-			
-			<!-- <li sec:authorize="isAuthenticated()"><a th:href="@{/logout}">로그아웃</a></li>
+			<li sec:authorize="isAuthenticated()"><a th:href="@{/logout}">로그아웃</a></li>
 			
 			<li sec:authorize="isAuthenticated()"><a th:href="@{/member/view}">회원정보 조회</a></li>
 			
-			<li sec:authorize="isAuthenticated()"><a th:href="@{/member/update}">회원정보 수정</a></li> -->
+			<li sec:authorize="isAuthenticated()"><a th:href="@{/member/update}">회원정보 수정</a></li>
+			
+			<!-- 게시판 링크 -->
+			<li sec:authorize="isAuthenticated()"><a th:href="@{/board/list}">게시글 목록</a></li>
 						
 			<!-- 등급(롤:role)이 관리자일 경우 -->
 			<li sec:authorize="hasRole('ROLE_ADMIN')"><a th:href="@{/admin/viewAllWithRoles}">회원 관리</a></li>
